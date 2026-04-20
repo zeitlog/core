@@ -11,6 +11,13 @@ You may find the following useful:
 
 ## Export format
 
+The parser supports multiple Fitbit sleep inputs:
+
+- legacy Fitbit CSV exports that begin with `Sleep`
+- Fitbit Web API v1.2 JSON responses such as `/1.2/user/-/sleep/date/...` and `/1.2/user/-/sleep/list.json`
+- JSON exports produced by browser-side backup tools that wrap those API responses
+- ZIP/account-archive inputs that contain `sleep-*.json` files
+
 The sleep diary export feature produces an ASCII CSV file without a byte order mark.  Here is an example:
 
 ```csv

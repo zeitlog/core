@@ -35,6 +35,96 @@ describe("Fitbit format", () => {
     var simple_end_time = new Date(2010, 10, 12, 14, 34, 0, 0).getTime();
     var  other_end_time = new Date(2012, 10, 10, 16, 32, 0, 0).getTime();
     var duration = ( 700 + 91 ) * 60*1000;
+    var simple_start_time = simple_end_time - duration;
+
+    var api_sleep_entry = {
+        "dateOfSleep": "2010-11-12",
+        "startTime": "2010-11-12T01:23:00.000",
+        "endTime": "2010-11-12T14:34:00.000",
+        "duration": duration,
+        "minutesToFallAsleep": 0,
+        "minutesAfterWakeup": 0,
+        "minutesAsleep": 700,
+        "minutesAwake": 91,
+        "awakeCount": 1,
+        "timeInBed": 12,
+        "type": "stages",
+        "levels": {
+            "summary": {
+                "deep": { "minutes": 12345 },
+                "light": { "minutes": 1234 },
+                "rem": { "minutes": 123 },
+                "wake": { "minutes": 91 },
+            },
+        },
+    };
+
+    var api_diary = JSON.stringify({
+        "sleep": [ api_sleep_entry ],
+    });
+
+    var api_diary_with_bedtime_offsets = JSON.stringify({
+        "sleep": [
+            Object.assign({},api_sleep_entry,{
+                "startTime": "2010-11-12T00:58:00.000",
+                "duration": ( 700 + 91 + 25 + 40 ) * 60*1000,
+                "minutesToFallAsleep": 25,
+                "minutesAfterWakeup": 40,
+                "timeInBed": 700 + 91 + 25 + 40,
+            }),
+        ],
+    });
+
+    var fitsaver_diary = JSON.stringify({
+        "format": "https://fitsaver.github.io/formats#date_range",
+        "results": {
+            "sleep": {
+                "sleep": [ api_sleep_entry ],
+            },
+            "sleep/list": {
+                "sleep": [ api_sleep_entry ],
+            },
+        },
+    });
+
+    var fitbit_n24_diary = JSON.stringify({
+        "sleep": [
+            {
+                "dateOfSleep": "2010-11-12",
+                "startTime": new Date(simple_start_time).toISOString(),
+                "endTime": new Date(simple_end_time).toISOString(),
+                "durationMs": duration,
+                "durationHours": duration / (60*60*1000),
+                "efficiency": 98,
+                "minutesAsleep": 700,
+                "minutesAwake": 91,
+                "isMainSleep": true,
+                "stages": {
+                    "deep": 12345,
+                    "light": 1234,
+                    "rem": 123,
+                    "wake": 91,
+                },
+            }
+        ],
+    });
+
+    var archive_json_diary = JSON.stringify({
+        "StartDate": "2010-11-12T01:23:00.000",
+        "EndDate": "2010-11-12T14:34:00.000",
+        "Duration": duration,
+        "MinutesToFallAsleep": 0,
+        "MinutesAfterWakeup": 0,
+        "MinutesAsleep": 700,
+        "MinutesAwake": 91,
+        "AwakeCount": 1,
+        "TimeInBed": 12,
+        "Type": "stages",
+        "SleepLevelRem": 123,
+        "SleepLevelLight": 1234,
+        "SleepLevelDeep": 12345,
+        "SleepLevelWake": 91,
+    });
 
     var simple_records = [
         {
@@ -42,6 +132,22 @@ describe("Fitbit format", () => {
             "Minutes Awake": 91,
             "Number of Awakenings": 1,
             "Time in Bed": 12,
+            "Minutes REM Sleep": 123,
+            "Minutes Light Sleep": 1234,
+            "Minutes Deep Sleep": 12345,
+            "End Time": simple_end_time,
+            "end"     : simple_end_time,
+            "Start Time": simple_end_time - duration,
+            "start"     : simple_end_time - duration,
+        }
+    ];
+
+    var fitbit_n24_records = [
+        {
+            "Minutes Asleep": 700,
+            "Minutes Awake": 91,
+            "Number of Awakenings": null,
+            "Time in Bed": 791,
             "Minutes REM Sleep": 123,
             "Minutes Light Sleep": 1234,
             "Minutes Deep Sleep": 12345,
@@ -65,6 +171,53 @@ describe("Fitbit format", () => {
         file_format: "Fitbit",
         name: "Simple diary",
         input: simple_diary,
+        expected: {
+            "records": simple_records,
+        }
+    });
+
+    test_parse({
+        file_format: "Fitbit",
+        name: "Fitbit API diary",
+        input: api_diary,
+        expected: {
+            "records": simple_records,
+        }
+    });
+
+    test_parse({
+        file_format: "Fitbit",
+        name: "Fitbit API diary with bedtime offsets",
+        input: api_diary_with_bedtime_offsets,
+        expected: {
+            "records": simple_records,
+        }
+    });
+
+    test_parse({
+        file_format: "Fitbit",
+        name: "Fitsaver diary",
+        input: fitsaver_diary,
+        expected: {
+            "records": simple_records,
+        }
+    });
+
+    test_parse({
+        file_format: "Fitbit",
+        name: "fitbit-n24 diary",
+        input: fitbit_n24_diary,
+        expected: {
+            "records": fitbit_n24_records,
+        }
+    });
+
+    test_parse({
+        file_format: "Fitbit",
+        name: "Archive diary",
+        input: {
+            "user-site-export/sleep-2010-11-12.json": archive_json_diary,
+        },
         expected: {
             "records": simple_records,
         }

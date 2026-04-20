@@ -200,44 +200,250 @@ class DiaryFitbit extends DiaryBase {
             return ( str == "N/A" ) ? null : parse_number(str);
         }
 
+        function parse_csv_records(contents) {
+            if ( !fitbit_file_re.test(contents) ) return null;
+            let records = [];
+            contents.replace(
+                new RegExp(fitbit_line,'gi'),
+                (_,
+                 start_time, start_year,start_month,start_day,start_hour,start_minute,start_ap,
+                 end_time, end_year,end_month,end_day,end_hour,end_minute,end_ap,
+                 minutes_asleep,minutes_awake,number_of_awakenings,time_in_bed,minutes_rem_sleep,minutes_light_sleep,minutes_deep_sleep
+                ) => {
+                    let end = parse_timestamp( end_year, end_month, end_day, end_hour, end_minute, end_ap.toUpperCase() ),
+                        record = {
+                            "End Time"            : end,
+                            "Minutes Asleep"      : parse_number(minutes_asleep),
+                            "Minutes Awake"       : parse_number(minutes_awake),
+                            "Number of Awakenings": parse_maybe_number(number_of_awakenings),
+                            "Time in Bed"         : parse_maybe_number(time_in_bed),
+                            "Minutes REM Sleep"   : parse_maybe_number(minutes_rem_sleep),
+                            "Minutes Light Sleep" : parse_maybe_number(minutes_light_sleep),
+                            "Minutes Deep Sleep"  : parse_maybe_number(minutes_deep_sleep),
+                            "end"                 : end,
+                        };
+                    record["Start Time"] = record["start"] = end - ( record["Minutes Asleep"] + record["Minutes Awake"] ) * 60*1000;
+                    records.push(record);
+                }
+            );
+            return records;
+        }
+
+        function get_first_value(record,keys) {
+            for ( let n=0; n!=keys.length; ++n ) {
+                if ( Object.prototype.hasOwnProperty.call(record,keys[n]) ) {
+                    return record[keys[n]];
+                }
+            }
+        }
+
+        function parse_json_timestamp(value) {
+            let ret = DiaryBase.parse_timestamp(value);
+            return isNaN(ret) ? NaN : ret;
+        }
+
+        function parse_json_number(value) {
+            if ( value === null || value === undefined || value === '' || value === "N/A" ) return null;
+            if ( typeof(value) == "number" ) return value;
+            if ( value.replace ) {
+                value = value.replace(/,/g,'').trim();
+                if ( !value.length || value == "N/A" ) return null;
+                value = parseInt(value,10);
+                return isNaN(value) ? NaN : value;
+            }
+            return NaN;
+        }
+
+        function get_level_summary_minutes(entry,key) {
+            const levels = get_first_value(entry,["levels"]),
+                  stages = get_first_value(entry,["stages"])
+            ;
+            if ( levels && levels.summary && levels.summary[key] ) {
+                return levels.summary[key].minutes;
+            }
+            if ( stages && Object.prototype.hasOwnProperty.call(stages,key) ) {
+                return stages[key];
+            }
+            switch ( key ) {
+            case "deep":
+                return get_first_value(entry,["SleepLevelDeep"]);
+            case "light":
+                return get_first_value(entry,["SleepLevelLight"]);
+            case "rem":
+                return get_first_value(entry,["SleepLevelRem"]);
+            case "wake":
+                return get_first_value(entry,["SleepLevelWake","SleepLevelAwake"]);
+            case "awake":
+                return get_first_value(entry,["SleepLevelAwake","SleepLevelWake"]);
+            }
+        }
+
+        function looks_like_json_fitbit_record(entry) {
+            if ( !entry || typeof(entry) != "object" ) return false;
+            return (
+                get_first_value(entry,["startTime","StartDate","endTime","EndDate","dateOfSleep"]) !== undefined
+                && get_first_value(entry,["minutesAsleep","MinutesAsleep","duration","Duration","durationMs","levels","stages"]) !== undefined
+            );
+        }
+
+        function extract_json_fitbit_records(node) {
+            let ret = [];
+            if ( !node ) return ret;
+
+            if ( Array.isArray(node) ) {
+                node.forEach( entry => ret = ret.concat(extract_json_fitbit_records(entry)) );
+                return ret;
+            }
+
+            if ( typeof(node) != "object" ) return ret;
+
+            if ( looks_like_json_fitbit_record(node) ) {
+                return [node];
+            }
+
+            if ( Array.isArray(node["sleep"]) ) {
+                return extract_json_fitbit_records(node["sleep"]);
+            }
+
+            if ( node["sleep"] ) {
+                ret = ret.concat(extract_json_fitbit_records(node["sleep"]));
+            }
+
+            if ( node["results"] ) {
+                ret = ret.concat(extract_json_fitbit_records(node["results"]));
+            }
+
+            Object.keys(node).forEach( key => {
+                if ( key != "sleep" && key != "results" && key.search(/sleep/i) != -1 ) {
+                    ret = ret.concat(extract_json_fitbit_records(node[key]));
+                }
+            });
+
+            return ret;
+        }
+
+        function parse_json_record(entry) {
+            let minutes_asleep = parse_json_number( get_first_value(entry,["minutesAsleep","MinutesAsleep"]) ),
+                minutes_awake = parse_json_number( get_first_value(entry,["minutesAwake","MinutesAwake"]) ),
+                number_of_awakenings = parse_json_number( get_first_value(entry,["awakeningsCount","awakeCount","AwakeCount","Number of Awakenings"]) ),
+                time_in_bed = parse_json_number( get_first_value(entry,["timeInBed","TimeInBed"]) ),
+                minutes_to_fall_asleep = parse_json_number( get_first_value(entry,["minutesToFallAsleep","MinutesToFallAsleep"]) ) || 0,
+                minutes_after_wakeup = parse_json_number( get_first_value(entry,["minutesAfterWakeup","MinutesAfterWakeup"]) ) || 0,
+                start = parse_json_timestamp( get_first_value(entry,["startTime","StartDate"]) ),
+                end = parse_json_timestamp( get_first_value(entry,["endTime","EndDate"]) ),
+                duration = parse_json_number( get_first_value(entry,["duration","Duration","durationMs"]) ),
+                minutes_rem_sleep = parse_json_number( get_level_summary_minutes(entry,"rem"  ) ),
+                minutes_light_sleep = parse_json_number( get_level_summary_minutes(entry,"light") ),
+                minutes_deep_sleep = parse_json_number( get_level_summary_minutes(entry,"deep" ) )
+            ;
+
+            if ( minutes_awake === null ) {
+                minutes_awake = parse_json_number( get_level_summary_minutes(entry,"wake") );
+            }
+            if ( minutes_awake === null ) {
+                minutes_awake = parse_json_number( get_level_summary_minutes(entry,"awake") );
+            }
+            if ( minutes_awake === null && time_in_bed !== null && !isNaN(time_in_bed) && minutes_asleep !== null && !isNaN(minutes_asleep) ) {
+                minutes_awake = time_in_bed - minutes_asleep - minutes_to_fall_asleep - minutes_after_wakeup;
+            }
+            if ( time_in_bed === null && duration !== null && !isNaN(duration) ) {
+                time_in_bed = Math.round(duration / (60*1000));
+            }
+            if ( isNaN(end) && !isNaN(start) && duration !== null && !isNaN(duration) ) {
+                end = start + duration;
+            }
+            if ( minutes_asleep === null || minutes_awake === null ) return null;
+            if ( isNaN(minutes_asleep) || isNaN(minutes_awake) ) return null;
+            if ( isNaN(start) && isNaN(end) ) return null;
+
+            if ( isNaN(end) ) {
+                end = start + ( minutes_asleep + minutes_awake ) * 60*1000;
+            }
+            // Match the legacy CSV importer: Fitbit exports expose a raw start
+            // time, but the dashboard historically plots sessions from the
+            // end time minus asleep+awake minutes.
+            start = end - ( minutes_asleep + minutes_awake ) * 60*1000;
+
+            return {
+                "Start Time"          : start,
+                "End Time"            : end,
+                "Minutes Asleep"      : minutes_asleep,
+                "Minutes Awake"       : minutes_awake,
+                "Number of Awakenings": number_of_awakenings,
+                "Time in Bed"         : time_in_bed,
+                "Minutes REM Sleep"   : minutes_rem_sleep,
+                "Minutes Light Sleep" : minutes_light_sleep,
+                "Minutes Deep Sleep"  : minutes_deep_sleep,
+                "start"               : start,
+                "end"                 : end,
+            };
+        }
+
+        function normalise_records(records) {
+            const seen = {};
+            return records
+                .filter( record => record )
+                .sort( (a,b) => b["start"] - a["start"] )
+                .filter( record => {
+                    const id = record["start"] + '\uE000' + record["end"];
+                    if ( seen[id] ) return false;
+                    seen[id] = 1;
+                    return true;
+                })
+            ;
+        }
+
+        function parse_json_records(contents) {
+            let parsed;
+            try {
+                parsed = JSON.parse(contents);
+            } catch (e) {
+                return null;
+            }
+            let records = normalise_records(extract_json_fitbit_records(parsed).map(parse_json_record));
+            return records.length ? records : null;
+        }
+
+        function parse_archive_records(contents) {
+            let records = [];
+            Object.keys(contents).forEach( filename => {
+                const file_contents = contents[filename];
+                if ( typeof(file_contents) != "string" ) return;
+                if ( filename.search(/\.csv$/i) != -1 ) {
+                    const csv_records = parse_csv_records(file_contents);
+                    if ( csv_records ) records = records.concat(csv_records);
+                }
+                if ( filename.search(/\.json$/i) != -1 ) {
+                    const json_records = parse_json_records(file_contents);
+                    if ( json_records ) records = records.concat(json_records);
+                }
+            });
+            records = normalise_records(records);
+            return records.length ? records : null;
+        }
+
         switch ( file["file_format"]() ) {
 
         case "string":
 
             const contents = file["contents"];
-            if ( !fitbit_file_re.test(contents) ) {
+            let parsed_records = parse_csv_records(contents) || parse_json_records(contents);
+            if ( !parsed_records ) {
 
                 return this.invalid(file);
 
             } else {
 
-                contents.replace(
-                    new RegExp(fitbit_line,'gi'),
-                    (_,
-                     start_time, start_year,start_month,start_day,start_hour,start_minute,start_ap,
-                     end_time, end_year,end_month,end_day,end_hour,end_minute,end_ap,
-                     minutes_asleep,minutes_awake,number_of_awakenings,time_in_bed,minutes_rem_sleep,minutes_light_sleep,minutes_deep_sleep
-                    ) => {
-                        let end = parse_timestamp( end_year, end_month, end_day, end_hour, end_minute, end_ap.toUpperCase() ),
-                            record = {
-                                "End Time"            : end,
-                                "Minutes Asleep"      : parse_number(minutes_asleep),
-                                "Minutes Awake"       : parse_number(minutes_awake),
-                                "Number of Awakenings": parse_maybe_number(number_of_awakenings),
-                                "Time in Bed"         : parse_maybe_number(time_in_bed),
-                                "Minutes REM Sleep"   : parse_maybe_number(minutes_rem_sleep),
-                                "Minutes Light Sleep" : parse_maybe_number(minutes_light_sleep),
-                                "Minutes Deep Sleep"  : parse_maybe_number(minutes_deep_sleep),
-                                "end"                 : end,
-                            };
-                        record["Start Time"] = record["start"] = end - ( record["Minutes Asleep"] + record["Minutes Awake"] ) * 60*1000;
-                        records.push(record);
-                    }
-                );
-
-                this["records"] = records;
+                this["records"] = parsed_records;
 
             }
+            break;
+
+        case "archive":
+
+            records = parse_archive_records(file["contents"]);
+            if ( !records ) return this.invalid(file);
+            this["records"] = records;
             break;
 
         default:
@@ -386,7 +592,7 @@ class DiaryFitbit extends DiaryBase {
             "title": "fitbit",
             "url": "/src/Fitbit",
             "statuses": [ "asleep" ],
-            "extension": ".csv",
+            "extension": ".csv,.json,.zip",
             "logo": "https://community.fitbit.com/html/assets/fitbit_logo_1200.png",
             "timezone": "tzdata",
         }
