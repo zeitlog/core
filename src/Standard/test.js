@@ -23,12 +23,26 @@ register_roundtrip_modifier("Standard",function(our_diary,roundtripped_diary,oth
         });
     }
     switch ( other_format.name ) {
+    case "GoogleHealth":
+        [our_diary,roundtripped_diary].forEach(function(diary) {
+            diary["records"] = diary["records"].filter( function(record) {
+                return (
+                    record["status"] == "asleep"
+                    && record["start"] !== undefined
+                    && record["end"] !== undefined
+                    && record["end"] > record["start"]
+                );
+            });
+        });
+    }
+    switch ( other_format.name ) {
     case "ActivityLog":
     case "SpreadsheetGraph":
     case "SpreadsheetTable":
     case "PleesTracker":
     case "SleepChart1":
     case "Fitbit":
+    case "GoogleHealth":
         [our_diary,roundtripped_diary].forEach(function(diary) {
             diary["records"].forEach( function(record) {
                 /*
@@ -57,6 +71,7 @@ register_roundtrip_modifier("Standard",function(our_diary,roundtripped_diary,oth
     case "Sleepmeter":
     case "SleepAsAndroid":
     case "Fitbit":
+    case "GoogleHealth":
         our_diary["records"].forEach( function(r,n) {
             /*
              * These formats converts missing timezones to Etc/GMT, which can also be specified manually.
@@ -77,6 +92,7 @@ register_roundtrip_modifier("Standard",function(our_diary,roundtripped_diary,oth
     case "SleepChart1":
     case "PleesTracker":
     case "Fitbit":
+    case "GoogleHealth":
         [our_diary,roundtripped_diary].forEach(function(diary) {
             diary["records"].forEach( function(record) {
                 ["comments"].forEach(function(key) {

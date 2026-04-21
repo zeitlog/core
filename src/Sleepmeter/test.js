@@ -1,11 +1,25 @@
 register_roundtrip_modifier("Sleepmeter",function(our_diary,roundtripped_diary,other_format) {
     switch ( other_format.name ) {
+    case "GoogleHealth":
+        [our_diary,roundtripped_diary].forEach(function(diary) {
+            diary["records"] = diary["records"].filter( function(record) {
+                return (
+                    record["status"] == "asleep"
+                    && record["start"] !== undefined
+                    && record["end"] !== undefined
+                    && record["end"] > record["start"]
+                );
+            });
+        });
+    }
+    switch ( other_format.name ) {
     case "ActivityLog":
     case "SleepChart1":
     case "PleesTracker":
     case "SpreadsheetGraph":
     case "SpreadsheetTable":
     case "Fitbit":
+    case "GoogleHealth":
         [our_diary,roundtripped_diary].forEach(function(diary) {
             diary["records"].forEach( function(record) {
                 /*
@@ -24,6 +38,7 @@ register_roundtrip_modifier("Sleepmeter",function(our_diary,roundtripped_diary,o
     case "SleepChart1":
     case "PleesTracker":
     case "Fitbit":
+    case "GoogleHealth":
         [our_diary,roundtripped_diary].forEach(function(diary) {
             diary["records"].forEach( function(record) {
                 /*

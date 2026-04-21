@@ -258,8 +258,8 @@ class DiaryFitbit extends DiaryBase {
             const levels = get_first_value(entry,["levels"]),
                   stages = get_first_value(entry,["stages"])
             ;
-            if ( levels && levels.summary && levels.summary[key] ) {
-                return levels.summary[key].minutes;
+            if ( levels && levels["summary"] && levels["summary"][key] ) {
+                return levels["summary"][key]["minutes"];
             }
             if ( stages && Object.prototype.hasOwnProperty.call(stages,key) ) {
                 return stages[key];

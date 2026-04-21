@@ -13,10 +13,27 @@ register_roundtrip_modifier("SpreadsheetGraph",function(our_diary,roundtripped_d
         });
     }
     switch ( other_format.name ) {
+    case "GoogleHealth":
+        [our_diary,roundtripped_diary].forEach(function(diary) {
+            diary["records"] = diary["records"].filter( function(record) {
+                return (
+                    record["status"] == "asleep"
+                    && record["start"] !== undefined
+                    && record["end"] !== undefined
+                    && record["end"] > record["start"]
+                );
+            });
+            diary["records"].forEach( function(record) {
+                delete record["missing_record_after"];
+            });
+        });
+    }
+    switch ( other_format.name ) {
     case "ActivityLog":
     case "SleepChart1":
     case "PleesTracker":
     case "Fitbit":
+    case "GoogleHealth":
         [our_diary,roundtripped_diary].forEach(function(diary) {
             diary["records"].forEach( function(record) {
                 /*

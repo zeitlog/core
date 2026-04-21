@@ -5,6 +5,7 @@ register_roundtrip_modifier("SleepChart1",function(our_diary,roundtripped_diary,
     case "SpreadsheetGraph":
     case "SpreadsheetTable":
     case "Fitbit":
+    case "GoogleHealth":
         [our_diary,roundtripped_diary].forEach(function(diary) {
             diary["records"].forEach( function(record) {
                 ["tags"].forEach(function(key) {

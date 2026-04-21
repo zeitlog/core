@@ -158,6 +158,12 @@ describe("Fitbit format", () => {
         }
     ];
 
+    var api_diary_with_bedtime_offsets_records = [
+        Object.assign({},simple_records[0],{
+            "Time in Bed": 700 + 91 + 25 + 40,
+        }),
+    ];
+
     test_parse({
         file_format: "Fitbit",
         name: "Empty diary",
@@ -190,7 +196,7 @@ describe("Fitbit format", () => {
         name: "Fitbit API diary with bedtime offsets",
         input: api_diary_with_bedtime_offsets,
         expected: {
-            "records": simple_records,
+            "records": api_diary_with_bedtime_offsets_records,
         }
     });
 

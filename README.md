@@ -8,6 +8,7 @@ Third-party documentation for a variety of file formats.  These describe issues 
 
 - [Activity Log](src/ActivityLog/)
 - [Fitbit](src/Fitbit/)
+- [Google Health](src/GoogleHealth/)
 - [Plees Tracker](src/PleesTracker/)
 - [Sleep as Android](src/SleepAsAndroid/)
 - [Sleepmeter](src/Sleepmeter/)

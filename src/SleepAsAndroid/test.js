@@ -4,6 +4,7 @@ register_roundtrip_modifier("SleepAsAndroid",function(our_diary,roundtripped_dia
     case "SleepChart1":
     case "PleesTracker":
     case "Fitbit":
+    case "GoogleHealth":
         [our_diary,roundtripped_diary].forEach(function(diary) {
             diary["records"].forEach( function(record) {
                 /*
