@@ -9,7 +9,7 @@ In your HTML:
 
 ...
 
-<script src="https://sleepdiary.github.io/core/sleepdiary-core.min.js"></script>
+<script src="https://zeitlog.github.io/core/sleepdiary-core.min.js"></script>
 ```
 
 In your JavaScript:

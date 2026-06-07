@@ -28,15 +28,15 @@ To check if the project works in your browser, try the [browser-based unit tests
 
 ### I found a bug, how should I tell you?
 
-[Create a new bug report](https://github.com/sleepdiary/core/issues/new?assignees=&labels=&template=bug_report.md&title=) and we'll get right on it.
+[Create a new bug report](https://github.com/zeitlog/core/issues/new?assignees=&labels=&template=bug_report.md&title=) and we'll get right on it.
 
 ### I'd like to request a new feature, what should I say?
 
-Please [create a new feature request](https://github.com/sleepdiary/core/issues/new?assignees=&labels=&template=feature_request.md&title=).  We'll try to sort out your problem.
+Please [create a new feature request](https://github.com/zeitlog/core/issues/new?assignees=&labels=&template=feature_request.md&title=).  We'll try to sort out your problem.
 
 ### I'd like to change the code, how do I get started?
 
-Take a look at our [getting started guide](https://github.com/sleepdiary/docs/blob/main/development/getting-started.md).  Or if you'd like to talk to someone first, [open a discussion](https://github.com/sleepdiary/sleepdiary.github.io/discussions) and describe what you're planning.
+Take a look at our [getting started guide](https://github.com/zeitdex/docs/blob/main/development/getting-started.md).  Or if you'd like to talk to someone first, [open a discussion](https://github.com/zeitdex/zeitdex.github.io/discussions) and describe what you're planning.
 
 ## License
 

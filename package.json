@@ -3,9 +3,9 @@
   "description": "Manage file formats that record circadian rhythms",
   "version": "0.1.0",
   "main": "sleepdiary-core.min.js",
-  "homepage": "https://github.com/sleepdiary/core",
-  "bugs": "https://github.com/sleepdiary/core/issues",
-  "repository": "github:sleepdiary/core",
+  "homepage": "https://github.com/zeitlog/core",
+  "bugs": "https://github.com/zeitlog/core/issues",
+  "repository": "github:zeitlog/core",
   "license": "MIT",
   "files": [
     "sleepdiary-core.min.js",
