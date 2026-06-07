@@ -5,10 +5,11 @@
 
 name: Merge and push
 
+# NOTE (fork): the upstream "merge and push" build depends on the private
+# ghcr.io/sleepdiary/builder image and a "built" branch that this fork does not
+# use (the Zeitlog dashboard builds core itself in its own deploy workflow).
+# Left manual-only so it stops failing on every push.
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
