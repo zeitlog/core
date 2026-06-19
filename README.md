@@ -1,10 +1,10 @@
-# Sleep Diary Core Library
+# Zeitlog core
 
-Documentation and code for file formats that record circadian rhythms.
+Sleep-diary **format engines** — the parsing and serialising library behind the [Zeitlog](https://zeitlog.github.io/) tracker. A fork of [sleepdiary/core](https://github.com/sleepdiary/core), extended with **Fitbit** and **Google Health** import for circadian monitoring.
 
 ## Format documentation
 
-Third-party documentation for a variety of file formats.  These describe issues that implementors may face in practice, but which are not mentioned in the official documentation.
+Third-party notes on the file formats — practical issues implementers hit that aren't in the official docs:
 
 - [Activity Log](src/ActivityLog/)
 - [Fitbit](src/Fitbit/)
@@ -14,32 +14,37 @@ Third-party documentation for a variety of file formats.  These describe issues 
 - [Sleepmeter](src/Sleepmeter/)
 - [Spreadsheet Graph](src/SpreadsheetGraph/)
 - [Spreadsheet Table](src/SpreadsheetTable/)
-- [SleepChart 1.0](src/SleepChart1/)
 
-The example code can translate these formats to and from [Standard format](src/Standard), which provides a standard interface for common functionality.
+## Project map
 
-## JavaScript library
+Zeitlog (the tracker) and Zeitdex (docs & resources) for circadian rhythm disorders span a few repos across two GitHub orgs and one account:
 
-Each format includes example code for loading and saving documents in the relevant format.  They have been packaged into a JavaScript library you can use in your own projects.
+**Zeitlog — tracker** · [@zeitlog](https://github.com/zeitlog) · <https://zeitlog.github.io/>
 
-To check if the project works in your browser, try the [browser-based unit tests](browser_test.html).  Then [download the library](sleepdiary-core.min.js) and check out [the library documentation](doc/).
+| Repo | Role |
+|---|---|
+| [zeitlog.github.io](https://github.com/zeitlog/zeitlog.github.io) | The tracker web app |
+| [core](https://github.com/zeitlog/core) | Sleep-diary format engines (parsing) |
+| [report](https://github.com/zeitlog/report) | Sleep-doctor report bundle |
+| [info](https://github.com/zeitlog/info) | Analysis & charts bundle |
 
-## Get Involved
+**Zeitdex — docs & resources** · [@zeitdex](https://github.com/zeitdex) · <https://zeitdex.github.io/>
 
-### I found a bug, how should I tell you?
+| Repo | Role |
+|---|---|
+| [zeitdex.github.io](https://github.com/zeitdex/zeitdex.github.io) | Docs & resources site (MkDocs) |
+| [docs](https://github.com/zeitdex/docs) | Documentation source |
+| [resources](https://github.com/zeitdex/resources) | Specialist & software directory data |
 
-[Create a new bug report](https://github.com/zeitlog/core/issues/new?assignees=&labels=&template=bug_report.md&title=) and we'll get right on it.
+**Pre-production** · [@wellivea1](https://github.com/wellivea1)
 
-### I'd like to request a new feature, what should I say?
+| Repo | Role |
+|---|---|
+| [dashboard-vibecode](https://github.com/wellivea1/dashboard-vibecode) | Pre-prod tracker · <https://wellivea1.github.io/dashboard-vibecode/> |
+| [core-vibecode](https://github.com/wellivea1/core-vibecode) | Pre-prod core |
 
-Please [create a new feature request](https://github.com/zeitlog/core/issues/new?assignees=&labels=&template=feature_request.md&title=).  We'll try to sort out your problem.
-
-### I'd like to change the code, how do I get started?
-
-Take a look at our [getting started guide](https://github.com/zeitdex/docs/blob/main/development/getting-started.md).  Or if you'd like to talk to someone first, [open a discussion](https://github.com/zeitdex/zeitdex.github.io/discussions) and describe what you're planning.
+Forked from the [Sleep Diary Project](https://github.com/sleepdiary).
 
 ## License
 
-Sleep Diary Core Library, Copyright © 2020-2022 [Sleepdiary Developers](mailto:sleepdiary@pileofstuff.org)
-
-Sleep Diary Core Library comes with ABSOLUTELY NO WARRANTY.  This is free software, and you are welcome to redistribute it under certain conditions.  For details, see [the license statement](LICENSE).
+A fork of Sleep Diary core, © 2020–2021 Sleepdiary Developers. Free software (GPL-2.0-only) with ABSOLUTELY NO WARRANTY — see [LICENSE](LICENSE).
